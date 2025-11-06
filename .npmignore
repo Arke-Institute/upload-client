@@ -1,0 +1,28 @@
+# Test fixtures (large binary files)
+test/fixtures/
+
+# Development files
+examples/
+deployment/
+.github/
+
+# Build artifacts
+*.log
+.DS_Store
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
