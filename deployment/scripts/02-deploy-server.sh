@@ -24,7 +24,7 @@ set -e
 # Configuration
 WORKER_URL="${1:-https://ingest.arke.institute}"
 REPO_URL="https://github.com/Arke-Institute/upload-server.git"
-BRANCH="feature/server-api"
+BRANCH="main"
 INFO_FILE="deployment/instance-info.json"
 
 echo "=================================================="
@@ -241,9 +241,9 @@ sudo mkdir -p /data/arke-uploads
 sudo chown -R 1001:1001 /data/arke-uploads
 echo "✓ Upload directory created with correct permissions"
 
-# Start service
-sudo systemctl start arke-upload.service
-echo "✓ Service started"
+# Restart service (use restart to handle both new and existing services)
+sudo systemctl restart arke-upload.service
+echo "✓ Service restarted"
 
 # Wait for service to be healthy
 echo ""
