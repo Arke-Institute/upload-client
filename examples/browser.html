@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arke Upload Client - Browser Example</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-top: 0;
+    }
+    .upload-section {
+      margin: 20px 0;
+    }
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .progress {
+      margin: 20px 0;
+      display: none;
+    }
+    .progress.active {
+      display: block;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 30px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #45a049);
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .status.info {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    .status.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Arke Upload Client</h1>
+    <p>Upload files to Arke Institute's ingest service directly from your browser.</p>
+
+    <div class="upload-section">
+      <label for="workerUrl"><strong>Worker URL:</strong></label>
+      <input
+        type="text"
+        id="workerUrl"
+        value="https://ingest.arke.institute"
+        placeholder="https://ingest.arke.institute"
+      >
+
+      <label for="uploader"><strong>Your Name:</strong></label>
+      <input
+        type="text"
+        id="uploader"
+        value="Browser Test User"
+        placeholder="Your name"
+      >
+
+      <label for="rootPath"><strong>Root Path:</strong></label>
+      <input
+        type="text"
+        id="rootPath"
+        value="/test/browser-upload"
+        placeholder="/test/browser-upload"
+      >
+
+      <label for="files"><strong>Select Files:</strong></label>
+      <input
+        type="file"
+        id="files"
+        multiple
+        webkitdirectory
+        directory
+      >
+      <small>You can select a folder to upload all files in it.</small>
+
+      <button id="uploadBtn" onclick="uploadFiles()">Upload Files</button>
+    </div>
+
+    <div class="progress" id="progress">
+      <div class="status info" id="status">Initializing...</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+      </div>
+      <div id="details" style="margin-top: 10px; font-size: 14px; color: #666;"></div>
+    </div>
+
+    <div id="result"></div>
+  </div>
+
+  <script type="module">
+    import { ArkeUploader } from '../dist/browser.js';
+
+    window.uploadFiles = async function() {
+      const workerUrl = document.getElementById('workerUrl').value;
+      const uploader = document.getElementById('uploader').value;
+      const rootPath = document.getElementById('rootPath').value;
+      const filesInput = document.getElementById('files');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const progressDiv = document.getElementById('progress');
+      const statusDiv = document.getElementById('status');
+      const progressFill = document.getElementById('progressFill');
+      const detailsDiv = document.getElementById('details');
+      const resultDiv = document.getElementById('result');
+
+      if (!filesInput.files || filesInput.files.length === 0) {
+        alert('Please select files to upload');
+        return;
+      }
+
+      if (!uploader.trim()) {
+        alert('Please enter your name');
+        return;
+      }
+
+      // Show progress
+      progressDiv.classList.add('active');
+      uploadBtn.disabled = true;
+      resultDiv.innerHTML = '';
+
+      try {
+        // Create uploader instance
+        const client = new ArkeUploader({
+          workerUrl,
+          uploader,
+          rootPath,
+          parallelUploads: 3,
+        });
+
+        statusDiv.textContent = 'Starting upload...';
+        statusDiv.className = 'status info';
+
+        // Convert FileList to Array
+        const files = Array.from(filesInput.files);
+
+        // Upload files
+        const result = await client.uploadBatch(files, {
+          onProgress: (progress) => {
+            const pct = Math.round(progress.percentComplete);
+            progressFill.style.width = `${pct}%`;
+            progressFill.textContent = `${pct}%`;
+
+            statusDiv.textContent = `${progress.phase.toUpperCase()}: ${progress.filesUploaded}/${progress.filesTotal} files`;
+
+            detailsDiv.innerHTML = `
+              <strong>Current:</strong> ${progress.currentFile || 'Processing...'}<br>
+              <strong>Uploaded:</strong> ${(progress.bytesUploaded / 1024 / 1024).toFixed(2)} MB / ${(progress.bytesTotal / 1024 / 1024).toFixed(2)} MB
+            `;
+          },
+        });
+
+        // Show success
+        statusDiv.textContent = 'Upload complete!';
+        statusDiv.className = 'status success';
+
+        resultDiv.innerHTML = `
+          <div class="status success">
+            <strong>✅ Success!</strong><br>
+            <strong>Batch ID:</strong> ${result.batchId}<br>
+            <strong>Files uploaded:</strong> ${result.filesUploaded}<br>
+            <strong>Total size:</strong> ${(result.bytesUploaded / 1024 / 1024).toFixed(2)} MB<br>
+            <strong>Duration:</strong> ${(result.durationMs / 1000).toFixed(2)}s
+          </div>
+        `;
+
+      } catch (error) {
+        console.error('Upload error:', error);
+        statusDiv.textContent = 'Upload failed';
+        statusDiv.className = 'status error';
+
+        resultDiv.innerHTML = `
+          <div class="status error">
+            <strong>❌ Error:</strong> ${error.message}
+          </div>
+        `;
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    };
+  </script>
+</body>
+</html>

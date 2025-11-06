@@ -3,7 +3,6 @@
  */
 
 import { isRetryableError } from './errors.js';
-import { getLogger } from './logger.js';
 
 export interface RetryOptions {
   maxRetries: number;
@@ -27,7 +26,6 @@ export async function retryWithBackoff<T>(
   options: Partial<RetryOptions> = {}
 ): Promise<T> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
-  const logger = getLogger();
 
   let lastError: any;
 
@@ -39,13 +37,11 @@ export async function retryWithBackoff<T>(
 
       // Don't retry if we've exhausted attempts
       if (attempt >= opts.maxRetries) {
-        logger.error(`All ${opts.maxRetries + 1} attempts failed`, { error });
         throw error;
       }
 
       // Check if error is retryable
       if (opts.shouldRetry && !opts.shouldRetry(error)) {
-        logger.debug('Error is not retryable, failing immediately', { error });
         throw error;
       }
 
@@ -53,11 +49,6 @@ export async function retryWithBackoff<T>(
       const delay = Math.min(
         opts.initialDelay * Math.pow(2, attempt),
         opts.maxDelay
-      );
-
-      logger.warn(
-        `Attempt ${attempt + 1}/${opts.maxRetries + 1} failed, retrying in ${delay}ms`,
-        { error: error.message }
       );
 
       await sleep(delay);
