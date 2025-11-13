@@ -16,7 +16,7 @@ export interface StartFileUploadRequest {
     file_size: number;
     logical_path: string;
     content_type: string;
-    cid: string;
+    cid?: string;
     processing_config: ProcessingConfig;
 }
 export interface CompleteFileUploadRequest {

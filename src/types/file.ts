@@ -20,8 +20,8 @@ export interface FileInfo {
   /** MIME type */
   contentType: string;
 
-  /** IPFS CID v1 (base32) */
-  cid: string;
+  /** IPFS CID v1 (base32) - optional, may be undefined if computation failed */
+  cid?: string;
 
   /** Processing configuration for this file */
   processingConfig: ProcessingConfig;

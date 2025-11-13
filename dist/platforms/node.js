@@ -165,14 +165,14 @@ export class NodeScanner {
                 console.warn(`Skipping unreadable file: ${fullPath}`);
                 return;
             }
-            // Compute CID
+            // Compute CID (optional - continue without if computation fails)
             let cid;
             try {
                 cid = await computeFileCID(fullPath);
             }
             catch (error) {
-                console.warn(`Skipping file with CID computation error: ${fullPath}`, error.message);
-                return;
+                console.warn(`Warning: CID computation failed for ${fullPath}, continuing without CID:`, error.message);
+                cid = undefined;
             }
             // Add to results
             files.push({

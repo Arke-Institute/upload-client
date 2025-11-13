@@ -85,15 +85,15 @@ export class BrowserScanner {
         }
         // Determine content type
         const contentType = file.type || getMimeType(fileName);
-        // Compute CID
+        // Compute CID (optional - continue without if computation fails)
         let cid;
         try {
             const buffer = await file.arrayBuffer();
             cid = await computeCIDFromBuffer(new Uint8Array(buffer));
         }
         catch (error) {
-            console.warn(`Skipping file with CID computation error: ${fileName}`, error.message);
-            return null;
+            console.warn(`Warning: CID computation failed for ${fileName}, continuing without CID:`, error.message);
+            cid = undefined;
         }
         // For browser files, we store the File object itself as a special marker
         // The actual File object will be passed separately during upload

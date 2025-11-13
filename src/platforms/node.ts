@@ -201,13 +201,13 @@ export class NodeScanner implements PlatformScanner {
         return;
       }
 
-      // Compute CID
-      let cid: string;
+      // Compute CID (optional - continue without if computation fails)
+      let cid: string | undefined;
       try {
         cid = await computeFileCID(fullPath);
       } catch (error: any) {
-        console.warn(`Skipping file with CID computation error: ${fullPath}`, error.message);
-        return;
+        console.warn(`Warning: CID computation failed for ${fullPath}, continuing without CID:`, error.message);
+        cid = undefined;
       }
 
       // Add to results

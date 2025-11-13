@@ -105,14 +105,14 @@ export class BrowserScanner implements PlatformScanner {
     // Determine content type
     const contentType = file.type || getMimeType(fileName);
 
-    // Compute CID
-    let cid: string;
+    // Compute CID (optional - continue without if computation fails)
+    let cid: string | undefined;
     try {
       const buffer = await file.arrayBuffer();
       cid = await computeCIDFromBuffer(new Uint8Array(buffer));
     } catch (error: any) {
-      console.warn(`Skipping file with CID computation error: ${fileName}`, error.message);
-      return null;
+      console.warn(`Warning: CID computation failed for ${fileName}, continuing without CID:`, error.message);
+      cid = undefined;
     }
 
     // For browser files, we store the File object itself as a special marker
