@@ -38,6 +38,11 @@ export class ArkeUploader {
 
     this.workerClient = new WorkerClient({
       baseUrl: config.workerUrl,
+      timeout: config.timeout,
+      maxRetries: config.maxRetries,
+      retryInitialDelay: config.retryInitialDelay,
+      retryMaxDelay: config.retryMaxDelay,
+      retryJitter: config.retryJitter,
       debug: false,
     });
 
@@ -235,13 +240,26 @@ export class ArkeUploader {
     // Get file data
     const fileData = await this.getFileData(file, source);
 
+    // Prepare retry options
+    const retryOptions = {
+      maxRetries: this.config.maxRetries,
+      retryInitialDelay: this.config.retryInitialDelay,
+      retryMaxDelay: this.config.retryMaxDelay,
+      retryJitter: this.config.retryJitter,
+    };
+
     // Upload to R2
     if (uploadInfo.upload_type === 'simple') {
-      await uploadSimple(fileData, uploadInfo.presigned_url!);
+      await uploadSimple(fileData, uploadInfo.presigned_url!, file.contentType, retryOptions);
     } else {
       // Multipart upload - map presigned URLs to array of URL strings
       const partUrls = uploadInfo.presigned_urls!.map((p) => p.url);
-      const parts = await uploadMultipart(fileData, partUrls, this.config.parallelParts || 3);
+      const parts = await uploadMultipart(
+        fileData,
+        partUrls,
+        this.config.parallelParts || 3,
+        retryOptions
+      );
 
       // Complete multipart upload
       await this.workerClient.completeFileUpload(batchId, {

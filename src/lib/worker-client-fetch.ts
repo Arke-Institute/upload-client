@@ -19,6 +19,9 @@ export interface WorkerClientConfig {
   baseUrl: string;
   timeout?: number;
   maxRetries?: number;
+  retryInitialDelay?: number;
+  retryMaxDelay?: number;
+  retryJitter?: boolean;
   debug?: boolean;
 }
 
@@ -26,12 +29,18 @@ export class WorkerClient {
   private baseUrl: string;
   private timeout: number;
   private maxRetries: number;
+  private retryInitialDelay: number;
+  private retryMaxDelay: number;
+  private retryJitter: boolean;
   private debug: boolean;
 
   constructor(config: WorkerClientConfig) {
     this.baseUrl = config.baseUrl;
     this.timeout = config.timeout ?? 30000; // 30 seconds
     this.maxRetries = config.maxRetries ?? 3;
+    this.retryInitialDelay = config.retryInitialDelay ?? 1000; // 1 second
+    this.retryMaxDelay = config.retryMaxDelay ?? 30000; // 30 seconds
+    this.retryJitter = config.retryJitter ?? true;
     this.debug = config.debug ?? false;
   }
 
@@ -99,7 +108,12 @@ export class WorkerClient {
   async initBatch(params: InitBatchRequest): Promise<InitBatchResponse> {
     return retryWithBackoff(
       () => this.request<InitBatchResponse>('POST', '/api/batches/init', params),
-      { maxRetries: this.maxRetries }
+      {
+        maxRetries: this.maxRetries,
+        initialDelay: this.retryInitialDelay,
+        maxDelay: this.retryMaxDelay,
+        jitter: this.retryJitter,
+      }
     );
   }
 
@@ -117,7 +131,12 @@ export class WorkerClient {
           `/api/batches/${batchId}/files/start`,
           params
         ),
-      { maxRetries: this.maxRetries }
+      {
+        maxRetries: this.maxRetries,
+        initialDelay: this.retryInitialDelay,
+        maxDelay: this.retryMaxDelay,
+        jitter: this.retryJitter,
+      }
     );
   }
 
@@ -135,7 +154,12 @@ export class WorkerClient {
           `/api/batches/${batchId}/files/complete`,
           params
         ),
-      { maxRetries: this.maxRetries }
+      {
+        maxRetries: this.maxRetries,
+        initialDelay: this.retryInitialDelay,
+        maxDelay: this.retryMaxDelay,
+        jitter: this.retryJitter,
+      }
     );
   }
 
@@ -150,7 +174,12 @@ export class WorkerClient {
           `/api/batches/${batchId}/finalize`,
           {}
         ),
-      { maxRetries: this.maxRetries }
+      {
+        maxRetries: this.maxRetries,
+        initialDelay: this.retryInitialDelay,
+        maxDelay: this.retryMaxDelay,
+        jitter: this.retryJitter,
+      }
     );
   }
 }

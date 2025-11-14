@@ -18,6 +18,7 @@ export class UploadError extends Error {
   constructor(
     message: string,
     public fileName?: string,
+    public statusCode?: number,
     public cause?: Error
   ) {
     super(message);
@@ -64,7 +65,15 @@ export function isRetryableError(error: any): boolean {
     return error.statusCode ? error.statusCode >= 500 : false;
   }
 
-  // Axios network errors
+  // Upload errors with 5xx or 429 status codes are retryable
+  if (error instanceof UploadError) {
+    if (error.statusCode) {
+      return error.statusCode >= 500 || error.statusCode === 429;
+    }
+    return false;
+  }
+
+  // Network-level errors (Node.js)
   if (error.code === 'ECONNRESET' ||
       error.code === 'ETIMEDOUT' ||
       error.code === 'ENOTFOUND' ||

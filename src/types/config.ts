@@ -51,6 +51,36 @@ export interface UploaderConfig {
    * @default 3
    */
   parallelParts?: number;
+
+  /**
+   * Maximum number of retry attempts for failed requests
+   * @default 3
+   */
+  maxRetries?: number;
+
+  /**
+   * Initial delay between retries in milliseconds
+   * @default 1000
+   */
+  retryInitialDelay?: number;
+
+  /**
+   * Maximum delay between retries in milliseconds
+   * @default 30000
+   */
+  retryMaxDelay?: number;
+
+  /**
+   * Add random jitter to retry delays to prevent thundering herd
+   * @default true
+   */
+  retryJitter?: boolean;
+
+  /**
+   * Timeout for API requests in milliseconds
+   * @default 30000
+   */
+  timeout?: number;
 }
 
 /**
