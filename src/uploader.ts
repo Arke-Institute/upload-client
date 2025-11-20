@@ -14,7 +14,7 @@ import { detectPlatform, type PlatformScanner, type FileSource } from './platfor
 import { uploadSimple } from './lib/simple-fetch.js';
 import { uploadMultipart } from './lib/multipart-fetch.js';
 import { ValidationError } from './utils/errors.js';
-import { validateBatchSize } from './lib/validation.js';
+import { validateBatchSize, validateCustomPrompts } from './lib/validation.js';
 
 const MULTIPART_THRESHOLD = 5 * 1024 * 1024; // 5 MB
 
@@ -106,6 +106,11 @@ export class ArkeUploader {
     const totalSize = files.reduce((sum, f) => sum + f.size, 0);
     validateBatchSize(totalSize);
 
+    // Validate custom prompts if provided
+    if (this.config.customPrompts) {
+      validateCustomPrompts(this.config.customPrompts);
+    }
+
     if (dryRun) {
       return {
         batchId: 'dry-run',
@@ -123,6 +128,7 @@ export class ArkeUploader {
       metadata: this.config.metadata,
       file_count: files.length,
       total_size: totalSize,
+      custom_prompts: this.config.customPrompts,
     });
 
     // Phase 3: Upload files

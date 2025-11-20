@@ -13,6 +13,7 @@ export type {
   UploadOptions,
   UploadProgress,
   BatchResult,
+  CustomPrompts,
 
   // Worker API types
   InitBatchRequest,

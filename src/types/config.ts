@@ -5,6 +5,42 @@
 import type { ProcessingConfig } from './processing.js';
 
 /**
+ * Custom prompts for AI services in the ingest pipeline
+ * All fields are optional. Prompts are appended to base system prompts.
+ */
+export interface CustomPrompts {
+  /**
+   * Applied to all AI service calls across all phases
+   * @example "All content is from 18th century manuscripts. Use period-appropriate terminology."
+   */
+  general?: string;
+
+  /**
+   * Phase-specific: file reorganization
+   * @example "Group documents by subject matter (astronomy, biology, chemistry, physics)."
+   */
+  reorganization?: string;
+
+  /**
+   * Phase-specific: PINAX metadata extraction
+   * @example "Focus on extracting dates, locations, and institutional affiliations. Use Library of Congress Subject Headings."
+   */
+  pinax?: string;
+
+  /**
+   * Phase-specific: description generation
+   * @example "Write descriptions in scholarly, academic tone with focus on historical context."
+   */
+  description?: string;
+
+  /**
+   * Phase-specific: knowledge graph extraction
+   * @example "Focus on extracting people, institutions, and their relationships."
+   */
+  cheimarros?: string;
+}
+
+/**
  * Configuration for the ArkeUploader SDK
  */
 export interface UploaderConfig {
@@ -34,6 +70,11 @@ export interface UploaderConfig {
    * Custom metadata to attach to batch
    */
   metadata?: Record<string, unknown>;
+
+  /**
+   * Custom prompts for AI services in the ingest pipeline
+   */
+  customPrompts?: CustomPrompts;
 
   /**
    * Processing options (OCR, IIIF, etc.)

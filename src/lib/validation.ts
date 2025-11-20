@@ -3,6 +3,7 @@
  */
 
 import { ValidationError } from '../utils/errors.js';
+import type { CustomPrompts } from '../types/config.js';
 
 // Size limits per API spec
 const MAX_FILE_SIZE = 5 * 1024 * 1024 * 1024; // 5 GB
@@ -256,6 +257,45 @@ export function validateTiffQuality(quality: number): void {
     throw new ValidationError(
       'TIFF quality must be a number between 1 and 100',
       'tiffQuality'
+    );
+  }
+}
+
+/**
+ * Validate custom prompts
+ */
+export function validateCustomPrompts(prompts?: CustomPrompts): void {
+  if (!prompts) return;
+
+  const MAX_LENGTH = 2000;
+  const MAX_TOTAL_LENGTH = 8000;
+  const fields: Array<keyof CustomPrompts> = [
+    'general',
+    'reorganization',
+    'pinax',
+    'description',
+    'cheimarros',
+  ];
+
+  let totalLength = 0;
+
+  for (const field of fields) {
+    const value = prompts[field];
+    if (value) {
+      if (value.length > MAX_LENGTH) {
+        throw new ValidationError(
+          `Custom prompt '${field}' exceeds maximum length of ${MAX_LENGTH} characters (current: ${value.length})`,
+          'customPrompts'
+        );
+      }
+      totalLength += value.length;
+    }
+  }
+
+  if (totalLength > MAX_TOTAL_LENGTH) {
+    throw new ValidationError(
+      `Total custom prompts length (${totalLength}) exceeds maximum of ${MAX_TOTAL_LENGTH} characters`,
+      'customPrompts'
     );
   }
 }

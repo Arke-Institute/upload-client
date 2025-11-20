@@ -8,6 +8,7 @@ export type {
   UploadOptions,
   UploadProgress,
   BatchResult,
+  CustomPrompts,
 } from './config.js';
 
 // Worker API Types

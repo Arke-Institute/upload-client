@@ -3,7 +3,8 @@
  * @see API.md for full specification
  */
 
-import { ProcessingConfig } from './processing.js';
+import type { ProcessingConfig } from './processing.js';
+import type { CustomPrompts } from './config.js';
 
 // ============================================================================
 // Request Types
@@ -16,6 +17,7 @@ export interface InitBatchRequest {
   file_count: number;
   total_size: number;
   metadata?: Record<string, any>;
+  custom_prompts?: CustomPrompts;
 }
 
 export interface StartFileUploadRequest {
