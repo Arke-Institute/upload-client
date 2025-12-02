@@ -208,8 +208,8 @@ export function validateTiffQuality(quality) {
 export function validateCustomPrompts(prompts) {
     if (!prompts)
         return;
-    const MAX_LENGTH = 2000;
-    const MAX_TOTAL_LENGTH = 8000;
+    const MAX_LENGTH = 50000; // 50KB per field - supports metadata file uploads
+    const MAX_TOTAL_LENGTH = 75000; // 75KB total - stays under 128KB queue message limit
     const fields = [
         'general',
         'reorganization',
